@@ -51,19 +51,22 @@
       matching-records
       '())))
 
-
 (defn find-publications-by-ids
   [ids model]
   (find-publications-having-column-matching-values :id ids model))
 
 (defn find-publications-by-document-ids
-  [ids model]
-  (find-publications-having-column-matching-values :document_id ids model))
+  [document-ids model]
+  (find-publications-having-column-matching-values :document_id document-ids model))
+
+(defn find-publications-by-hashes
+  [hashes model]
+  (find-publications-having-column-matching-values :hash hashes model))
 
 (defn is-subset-of
   [publications-status-ids-set]
   (fn [publication]
-    (let [document-id (:document_id publication)]
+    (let [document-id (:hash publication)]
       (clojure.set/subset? #{document-id} publications-status-ids-set))))
 
 (defn bulk-insert-of-publication-props
@@ -72,9 +75,9 @@
                            #(assoc % :id (uuid/to-string
                                            (-> (uuid/v1) (uuid/v5 (:legacy_id %)))))
                            publication-props)
-        publication-status-ids (pmap #(:document_id %) identified-props)
-        existing-publications (find-publications-by-document-ids publication-status-ids model)
-        existing-publication-status-ids (pmap #(:document_id %) existing-publications)
+        publication-status-ids (pmap #(:hash %) identified-props)
+        existing-publications (find-publications-by-hashes publication-status-ids model)
+        existing-publication-status-ids (pmap #(:hash %) existing-publications)
         filtered-publications (doall (remove (is-subset-of (set existing-publication-status-ids)) identified-props))
         publication-ids (pmap #(:id %) filtered-publications)]
     (if publication-ids

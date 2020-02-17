@@ -219,12 +219,12 @@
   [model & [limit]]
   (let [limit (if (some? limit)
                 limit
-                10000)
+                100000)
         is-published-col (get-column "is_published" model)
         matching-statuses (-> (select-statuses model)
                               (db/where {is-published-col 0})
-                              (db/limit limit)
                               (db/group :ust_status_id)
+                              (db/limit limit)
                               (db/select))]
     (if matching-statuses
       matching-statuses

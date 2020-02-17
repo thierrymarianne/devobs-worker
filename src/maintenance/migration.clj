@@ -23,7 +23,7 @@
   []
   (let [{status-model      :status
          publication-model :publication} (get-entity-manager (:database env))
-        status (status/find-unpublished-statuses status-model 100000)
+        status (status/find-unpublished-statuses status-model)
         publication-props (pmap status-to-publication status)
         publications (publication/bulk-insert-of-publication-props
                        publication-props
