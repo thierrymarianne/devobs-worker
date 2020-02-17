@@ -224,6 +224,7 @@
         matching-statuses (-> (select-statuses model)
                               (db/where {is-published-col 0})
                               (db/limit limit)
+                              (db/group :ust_status_id)
                               (db/select))]
     (if matching-statuses
       matching-statuses
