@@ -83,7 +83,7 @@
           (db/insert model (db/values filtered-publications))
           (catch Exception e
             (error-handler/log-error e)))
+        (if publication-status-ids
+          (status/update-status-having-status-ids publication-status-ids status-model))
         (find-publications-by-ids publication-ids model))
-      '())
-    (if publication-status-ids
-      (status/update-status-having-status-ids publication-status-ids status-model))))
+      '())))
