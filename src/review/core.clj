@@ -241,9 +241,9 @@
   (let [[label] args]
     (analysis-frequencies/who-publish-the-most-for-each-day-of-week label)))
 
-(defn ^{:requires []} command-migrate-status-to-publications
+(defn ^{:requires []} command-migrate-all-status-to-publications
   [args]
-  (migration/migrate-status-to-publications))
+  (migration/migrate-all-status-to-publications))
 
 (defn execute-command
   [name args]

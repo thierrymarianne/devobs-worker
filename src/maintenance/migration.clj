@@ -20,14 +20,20 @@
      :published_at (:created-at status)}))
 
 (defn migrate-status-to-publications
+  [{status-model      :status
+    publication-model :publication}]
+  (let [status (status/find-unpublished-statuses status-model)
+        publication-props (doall (pmap status-to-publication status))
+        _ (publication/bulk-insert-of-publication-props
+            publication-props
+            publication-model
+            status-model)]
+    status))
+
+(defn migrate-all-status-to-publications
   []
-  (let [{status-model      :status
-         publication-model :publication} (get-entity-manager (:database env))
-        status (status/find-unpublished-statuses status-model)
-        publication-props (pmap status-to-publication status)
-        publications (publication/bulk-insert-of-publication-props
-                       publication-props
-                       publication-model
-                       status-model)]
-    (if (pos? (count publications))
-      (migrate-status-to-publications))))
+  (let [models (get-entity-manager (:database env))
+        published-status (migrate-status-to-publications models)]
+    (loop [published-status published-status]
+      (when (> (count published-status) 0)
+        (recur (migrate-status-to-publications models))))))

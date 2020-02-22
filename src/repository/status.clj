@@ -215,6 +215,11 @@
         twitter-ids (map #(:ust_status_id %) prefixed-keys-values)]
     (insert-values-before-selecting-from-ids prefixed-keys-values twitter-ids model)))
 
+(defn filter-duplicates-by-status
+  []
+  (fn [[_ status]]
+    (> (count status) 1)))
+
 (defn find-unpublished-statuses
   [model & [limit]]
   (let [limit (if (some? limit)
@@ -223,16 +228,20 @@
         is-published-col (get-column "is_published" model)
         matching-statuses (-> (select-statuses model)
                               (db/where {is-published-col 0})
-                              (db/group :ust_status_id)
                               (db/limit limit)
-                              (db/select))]
-    (if matching-statuses
-      matching-statuses
+                              (db/select))
+        grouped-status (group-by :status-twitter-id matching-statuses)
+        filtered-status (->> grouped-status
+                            (remove (filter-duplicates-by-status))
+                            vals
+                           (map first))]
+    (if (some? filtered-status)
+      filtered-status
       '())))
 
-(defn update-status-having-status-ids
+(defn update-status-having-ids
   [status-ids model]
   (db/update
     model
     (db/set-fields {:is_published 1})
-    (db/where {:ust_status_id [in status-ids]})))
+    (db/where {:ust_id [in status-ids]})))

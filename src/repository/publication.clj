@@ -1,6 +1,7 @@
 (ns repository.publication
   (:require [korma.core :as db]
             [clj-uuid :as uuid]
+            [clojure.tools.logging :as log]
             [utils.error-handler :as error-handler]
             [repository.status :as status])
   (:use [utils.string]))
@@ -43,7 +44,7 @@
   "Find publications which values of a given column
   can be found in collection passed as argument"
   [column values model]
-  (let [values (if values values '(0))
+  (let [values (if (some? values) values '(0))
         matching-records (-> (select-publications model)
                              (db/where {column [in values]})
                              (db/select))]
@@ -75,18 +76,23 @@
                            #(assoc % :id (uuid/to-string
                                            (-> (uuid/v1) (uuid/v5 (:legacy_id %)))))
                            publication-props)
-        publication-status-ids (pmap #(:hash %) identified-props)
-        existing-publications (find-publications-by-hashes publication-status-ids model)
-        existing-publication-status-ids (pmap #(:hash %) existing-publications)
-        filtered-publications (doall (remove (is-subset-of (set existing-publication-status-ids)) identified-props))
-        publication-ids (pmap #(:id %) filtered-publications)]
-    (if publication-ids
+        publication-hashes (doall (pmap :hash identified-props))
+        status-ids (doall (pmap :legacy_id identified-props))
+        existing-publications (find-publications-by-hashes publication-hashes model)
+        existing-publication-hashes (doall (pmap #(:hash %) existing-publications))
+        filtered-publications (doall (remove (is-subset-of (set existing-publication-hashes)) identified-props))
+        publication-ids (doall (pmap #(:id %) filtered-publications))]
+    (if (pos? (count publication-ids))
       (do
         (try
           (db/insert model (db/values filtered-publications))
           (catch Exception e
-            (error-handler/log-error e)))
-        (if publication-status-ids
-          (status/update-status-having-status-ids publication-status-ids status-model))
+            (error-handler/log-error e)
+            (throw e)))
+        (if status-ids
+          (status/update-status-having-ids status-ids status-model))
         (find-publications-by-ids publication-ids model))
-      '())))
+      (do
+        (if (= (count status-ids) (count existing-publications))
+          (status/update-status-having-ids status-ids status-model))
+        '()))))
