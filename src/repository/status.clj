@@ -224,7 +224,7 @@
   [model & [limit]]
   (let [limit (if (some? limit)
                 limit
-                100000)
+                50000)
         is-published-col (get-column "is_published" model)
         matching-statuses (-> (select-statuses model)
                               (db/where {is-published-col 0})
