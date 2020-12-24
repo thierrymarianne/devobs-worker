@@ -32,7 +32,7 @@ jobs:
       - run:
           name: Copy test configuration
           command: |
-            cp .lein-env.test.dist .lein-env
+            cat .lein-env.test.dist | sed -E "s/__password__/$PGPASSWORD/g" > .lein-env
 
       - run:
           name: Waiting for Postgres to be ready
