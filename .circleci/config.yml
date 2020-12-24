@@ -49,7 +49,7 @@ jobs:
       - run:
           name: Create database
           command: |
-            sudo -u postgres psql \
+            psql \
             --host 127.0.0.1 \
             --port 5432 \
             --username devobs_worker \
