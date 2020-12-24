@@ -11,7 +11,7 @@ jobs:
       environment:
         POSTGRES_DB: devobs_worker_test
         POSTGRES_USER: devobs_worker
-        POSTGRES_PASSWORD: bigger_than_us
+        POSTGRES_PASSWORD: $PGPASSWORD
 
     working_directory:    ~/devobs-worker
 
@@ -49,7 +49,7 @@ jobs:
       - run:
           name: Create database
           command: |
-            psql --host 127.0.0.1 --port 5432 --username devobs_worker --dbname=devobs_worker_test --password='bigger_than_us' --echo-all --quiet --file ~/devobs-worker/build/create_schema.sql
+            psql --host 127.0.0.1 --port 5432 --username devobs_worker --dbname=devobs_worker_test --echo-all --quiet --file ~/devobs-worker/build/create_schema.sql
 
       - run:
           name: Install dependencies
