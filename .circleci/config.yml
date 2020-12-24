@@ -9,8 +9,9 @@ jobs:
         username: mydockerhub-user
         password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
       environment:
+        POSTGRES_DB: devobs_worker_test
         POSTGRES_USER: devobs_worker
-        POSTGRES_DB: bigger_than_us
+        POSTGRES_PASSWORD: bigger_than_us
 
     working_directory:    ~/devobs-worker
 
@@ -44,17 +45,18 @@ jobs:
             done
             echo Failed waiting for Postgres && exit 1
 
+      # See https://www.postgresql.org/docs/devel/app-psql.html
       - run:
           name: Create database
           command: |
-            psql -h 127.0.0.1 -U devobs_worker \
-            password='bigger_than_us' \
-            -p 5432 -a -q \
-            -f ~/devobs-worker/build/create_database.sql && \
-            psql -h 127.0.0.1 -U devobs_worker \
-            password='bigger_than_us' \
-            -p 5432 -a -q \
-            -f ~/devobs-worker/build/create_schema.sql
+            sudo -u postgres psql \
+            --host 127.0.0.1 \
+            --port 5432 \
+            --username devobs_worker \
+            --dbname=devobs_worker_test
+            --password='bigger_than_us' \
+            --echo-all --quiet \
+            --file ~/devobs-worker/build/create_schema.sql
 
       - run:
           name: Install dependencies
