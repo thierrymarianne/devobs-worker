@@ -9,8 +9,8 @@ jobs:
         username: mydockerhub-user
         password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
       environment:
-        POSTGRES_USER: circleci-demo-go
-        POSTGRES_DB: circle_test
+        POSTGRES_USER: devobs_worker
+        POSTGRES_DB: bigger_than_us
 
     working_directory:    ~/devobs-worker
 
@@ -45,7 +45,14 @@ jobs:
       - run:
           name: Create database
           command: |
-            # ..... ~/devobs-worker/build/schema.sql
+            psql -h 127.0.0.1 -U devobs_worker \
+            password='bigger_than_us' \
+            -p 5432 -a -q \
+            -f ~/devobs-worker/build/create_database.sql && \
+            psql -h 127.0.0.1 -U devobs_worker \
+            password='bigger_than_us' \
+            -p 5432 -a -q \
+            -f ~/devobs-worker/build/create_schema.sql
 
       - run:
           name: Install dependencies
