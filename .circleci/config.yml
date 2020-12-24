@@ -49,13 +49,12 @@ jobs:
       - run:
           name: Create database
           command: |
-            psql \
-            --host 127.0.0.1 \
-            --port 5432 \
-            --username devobs_worker \
+            psql --host 127.0.0.1
+            --port 5432
+            --username devobs_worker
             --dbname=devobs_worker_test
-            --password='bigger_than_us' \
-            --echo-all --quiet \
+            --password='bigger_than_us'
+            --echo-all --quiet
             --file ~/devobs-worker/build/create_schema.sql
 
       - run:
