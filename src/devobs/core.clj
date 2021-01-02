@@ -191,6 +191,11 @@
   (let [[date] args]
     (highlights/record-popularity-of-highlights date)))
 
+(defn ^{:requires [:date :publishers-list]} command-record-popularity-of-highlights-for-publishers-list
+  [args]
+  (let [[date publishers-list] args]
+    (highlights/record-popularity-of-highlights date publishers-list)))
+
 (defn ^{:requires [:date]} command-record-popularity-of-highlights-for-all-aggregates
   [args]
   (let [[date] args]
@@ -205,6 +210,11 @@
   [args]
   (let [[date] args]
     (highlights/save-highlights-for-main-aggregate date)))
+
+(defn ^{:requires [:date :publishers-list]} command-save-highlights-from-date-for-publishers-list
+  [args]
+  (let [[date publishers-list] args]
+    (highlights/save-highlights-from-date-for-aggregate date publishers-list)))
 
 (defn ^{:requires [:date]} command-save-highlights
   [args]
